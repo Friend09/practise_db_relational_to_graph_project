@@ -1,0 +1,11 @@
+# This file lists the Python package dependencies for the project. targeting relational databases and graph databases
+ipykernel
+pandas
+numpy
+faker
+networkx
+neo4j
+sqlalchemy
+matplotlib
+python-dotenv
+# sqlite3
