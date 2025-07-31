@@ -30,12 +30,12 @@ def generate_applications_data(num_records=50):
     security_classifications = ['public', 'internal', 'confidential', 'restricted']
     data_sensitivities = ['low', 'medium', 'high', 'critical']
     criticalities = ['low', 'medium', 'high', 'critical']
-    
+
     # Pre-define some common applications for dependencies and integrations
     common_apps = [
-        'Gmail', 'Microsoft Teams', 'Slack', 'Zoom', 'Jira', 'Confluence', 'GitHub', 'GitLab', 
-        'Adobe Photoshop', 'Figma', 'Salesforce', 'SAP ERP', 'Workday', 'ServiceNow', 'Splunk', 
-        'Okta', 'Azure AD', 'AWS Console', 'Google Cloud Console', 'Postman', 'VS Code', 'Notion', 
+        'Gmail', 'Microsoft Teams', 'Slack', 'Zoom', 'Jira', 'Confluence', 'GitHub', 'GitLab',
+        'Adobe Photoshop', 'Figma', 'Salesforce', 'SAP ERP', 'Workday', 'ServiceNow', 'Splunk',
+        'Okta', 'Azure AD', 'AWS Console', 'Google Cloud Console', 'Postman', 'VS Code', 'Notion',
         'Asana', 'Trello', 'Miro', 'Tableau', 'Power BI', 'Google Analytics', 'Mailchimp'
     ]
 
@@ -48,7 +48,7 @@ def generate_applications_data(num_records=50):
         technical_lead = fake.name()
         business_owner = fake.name()
         department = fake.job().replace(' ', '_').capitalize() + ' Dept'
-        
+
         installation_date = fake.date_between(start_date='-5y', end_date='today')
         last_updated = fake.date_between(start_date=installation_date, end_date='today')
         end_of_life_date = None
@@ -59,10 +59,10 @@ def generate_applications_data(num_records=50):
         # Generate dependencies and integrations
         num_depends = random.randint(0, 3)
         depends_on_apps = random.sample(common_apps, num_depends) if num_depends > 0 else []
-        
+
         num_integrates = random.randint(0, 3)
         integrates_with_apps = random.sample(common_apps, num_integrates) if num_integrates > 0 else []
-        
+
         # Ensure unique app names for dependencies/integrations
         depends_on_apps = [app for app in depends_on_apps if app != app_name]
         integrates_with_apps = [app for app in integrates_with_apps if app != app_name and app not in depends_on_apps]
@@ -88,7 +88,7 @@ def generate_applications_data(num_records=50):
             'deployment_type': random.choice(deployment_types),
             'environment': random.choice(environments),
             'platform': random.choice(platforms),
-            'programming_language': fake.language_name() if random.random() < 0.7 else None,
+            'programming_language': random.choice(['Python', 'JavaScript', 'Java', 'C++', 'C#', 'Ruby', 'Go', 'Rust', 'PHP', 'TypeScript', 'Swift', 'Kotlin']) if random.random() < 0.7 else None,
             'database_type': random.choice(database_types) if random.random() < 0.6 else None,
             'depends_on_apps': ','.join(depends_on_apps),
             'integrates_with_apps': ','.join(integrates_with_apps),
@@ -112,6 +112,3 @@ if __name__ == "__main__":
     df = generate_applications_data(num_records=100) # Generate 100 records
     df.to_csv('/home/ubuntu/relational_to_graph_project/data/applications.csv', index=False)
     print("Generated applications.csv with 100 records.")
-
-
-
