@@ -1,8 +1,24 @@
+# scripts/create_db.py
 
 import sqlite3
 import pandas as pd
 
 def create_and_load_db(db_path, sql_schema_path, csv_data_path):
+    """
+    Create an SQLite database using the provided SQL schema and load data from a CSV file.
+
+    Args:
+        db_path (str): Path to the SQLite database file to create or overwrite.
+        sql_schema_path (str): Path to the SQL schema file (DDL statements).
+        csv_data_path (str): Path to the CSV file containing application data.
+
+    This function:
+        - Loads the SQL schema and executes it to create the database structure.
+        - Reads the CSV data into a pandas DataFrame.
+        - Cleans column names to match the SQL schema.
+        - Converts boolean and date columns to SQLite-compatible formats.
+        - Inserts the data into the 'applications' table.
+    """
     conn = None
     try:
         conn = sqlite3.connect(db_path)
@@ -24,8 +40,11 @@ def create_and_load_db(db_path, sql_schema_path, csv_data_path):
         if 'in_use' in df.columns:
             df['in_use'] = df['in_use'].astype(int)
 
-        # Handle date columns: convert to string format compatible with SQLite DATE type
-        date_columns = ['installation_date', 'last_updated', 'end_of_life_date', 'renewal_date', 'created_at', 'updated_at']
+                # Handle date columns: convert to string format compatible with SQLite DATE type
+        date_columns = [
+            'installation_date', 'last_updated', 'end_of_life_date',
+            'renewal_date', 'created_at', 'updated_at'
+        ]
         for col in date_columns:
             if col in df.columns:
                 # Convert to datetime, then to ISO format string, handle NaT (Not a Time) for None

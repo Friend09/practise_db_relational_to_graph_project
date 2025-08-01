@@ -92,3 +92,6 @@ SELECT * FROM applications;
 -- Query: check all in-use applications
 SELECT * FROM applications
 WHERE in_use = TRUE;
+
+-- Query: count total number of applications
+SELECT COUNT(*) FROM applications;

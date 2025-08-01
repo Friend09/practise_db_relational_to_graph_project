@@ -88,7 +88,7 @@ def generate_applications_data(num_records=50):
             'deployment_type': random.choice(deployment_types),
             'environment': random.choice(environments),
             'platform': random.choice(platforms),
-            'programming_language': random.choice(['Python', 'JavaScript', 'Java', 'C++', 'C#', 'Ruby', 'Go', 'Rust', 'PHP', 'TypeScript', 'Swift', 'Kotlin']) if random.random() < 0.7 else None,
+            'programming_language': random.choice(['Python', 'JavaScript', 'Java', 'C++', 'C#', 'Ruby', 'Go', 'Rust', 'PHP', 'TypeScript', 'Swift', 'Kotlin', 'Scala', 'Perl', 'Haskell']) if random.random() < 0.7 else None,
             'database_type': random.choice(database_types) if random.random() < 0.6 else None,
             'depends_on_apps': ','.join(depends_on_apps),
             'integrates_with_apps': ','.join(integrates_with_apps),
@@ -110,5 +110,5 @@ def generate_applications_data(num_records=50):
 
 if __name__ == "__main__":
     df = generate_applications_data(num_records=100) # Generate 100 records
-    df.to_csv('/home/ubuntu/relational_to_graph_project/data/applications.csv', index=False)
+    df.to_csv('data/applications.csv', index=False)
     print("Generated applications.csv with 100 records.")
