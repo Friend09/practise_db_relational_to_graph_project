@@ -115,7 +115,9 @@ traitlets==5.14.3
     #   jupyter-core
     #   matplotlib-inline
 typing-extensions==4.14.1
-    # via sqlalchemy
+    # via
+    #   ipython
+    #   sqlalchemy
 tzdata==2025.2
     # via
     #   faker
