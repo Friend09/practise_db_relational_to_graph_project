@@ -16,7 +16,7 @@ def create_and_load_db(db_path, sql_schema_path, csv_data_path):
 
         # Load CSV data into a DataFrame
         df = pd.read_csv(csv_data_path)
-        
+
         # Clean up column names to match SQL schema (lowercase and remove spaces if any)
         df.columns = df.columns.str.lower().str.replace(' ', '_')
 
@@ -45,9 +45,9 @@ def create_and_load_db(db_path, sql_schema_path, csv_data_path):
             conn.close()
 
 if __name__ == "__main__":
-    db_file = '/home/ubuntu/relational_to_graph_project/data/applications.db'
-    sql_schema = '/home/ubuntu/relational_to_graph_project/sql/applications.sql'
-    csv_data = '/home/ubuntu/relational_to_graph_project/data/applications.csv'
+    path = "/Users/vamsi_mbmax/Developer/VAM_Documents/01_vam_PROJECTS/LEARNING/proj_Databases/dev_proj_Databases/practise_db_relational_to_graph_project"
+
+    csv_data = f'{path}/data/applications.csv'
+    db_file = f'{path}/data/applications.db'
+    sql_schema = f'{path}/sql/applications.sql'
     create_and_load_db(db_file, sql_schema, csv_data)
-
-

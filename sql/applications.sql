@@ -2,21 +2,13 @@
 -- This table stores comprehensive information about applications in an organization
 -- Designed to demonstrate relationships that can be explored in a graph database
 
--- Drop the schema if it exists to start fresh
--- Note: This will remove all tables and data in the schema, so use with caution
--- Uncomment the next line to drop the schema
--- DROP SCHEMA IF EXISTS schema_practise;
+-- Drop the table if it exists to start fresh
+DROP TABLE IF EXISTS applications;
 
--- Create the schema if it doesn't exist
-CREATE SCHEMA IF NOT EXISTS schema_practise;
-
--- Specify which schema to use (PostgreSQL syntax)
-SET search_path TO schema_practise;
-
--- Now create the table (no need to qualify with schema name when search_path is set)
+-- Now create the table
 CREATE TABLE applications (
     -- Primary identifier
-    app_id SERIAL PRIMARY KEY,
+    app_id INTEGER PRIMARY KEY AUTOINCREMENT,
 
     -- Basic application information
     app_name VARCHAR(100) NOT NULL,
@@ -60,7 +52,21 @@ CREATE TABLE applications (
     -- Compliance and security
     compliance_requirements TEXT, -- Comma-separated list like 'SOX', 'GDPR', 'HIPAA'
     security_classification VARCHAR(20), -- 'public', 'internal', 'confidential', 'restricted'
-    data_sensitivity VARCHAR(20) -- 'low', 'medium', 'high', 'critical'
+    data_sensitivity VARCHAR(20), -- 'low', 'medium', 'high', 'critical'
+
+    -- Dates
+    installation_date DATE,
+    last_updated DATE,
+    end_of_life_date DATE,
+    renewal_date DATE,
+
+    -- Additional metadata
+    uptime_sla VARCHAR(20),
+    criticality VARCHAR(20),
+    tags TEXT,
+    notes TEXT,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
 );
 
 -- Create indexes for better query performance
@@ -71,6 +77,7 @@ CREATE INDEX idx_applications_app_owner ON applications(app_owner);
 CREATE INDEX idx_applications_in_use ON applications(in_use);
 
 -- Create a view for active applications
+DROP VIEW IF EXISTS active_applications;
 CREATE VIEW active_applications AS
 SELECT * FROM applications
 WHERE in_use = TRUE;
