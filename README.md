@@ -68,7 +68,9 @@ python -c "import pandas, faker, neo4j, sqlite3; from dotenv import load_dotenv;
 
 ### Setup Neo4j
 
-1. **Neo4j Desktop**: Download from [neo4j.com](https://neo4j.com/download/), create database
+1. **Neo4j Desktop**: Download from [neo4j.com](https://neo4j.com/download/)
+   - Create database instance named "learn-graph-db"
+   - Start the database
 2. **Neo4j Aura**: Sign up at [neo4j.com/aura](https://neo4j.com/aura/) for cloud instance
 
 ### Configure Environment
@@ -76,6 +78,7 @@ python -c "import pandas, faker, neo4j, sqlite3; from dotenv import load_dotenv;
 ```bash
 cp .env.example .env
 # Edit .env with your Neo4j connection details
+# Make sure NEO4J_DATABASE=learn-graph-db for local setup
 ```
 
 **📖 For detailed setup instructions and troubleshooting, see:** [**Setup Guide**](notes/00_Setup_and_Configuration_Guide.md)

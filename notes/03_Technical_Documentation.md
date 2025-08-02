@@ -229,10 +229,11 @@ The graph supports comprehensive impact assessment:
 
 1. **Data Extraction:** Extract data from relational applications table
 2. **Data Transformation:** Parse comma-separated fields into relationship data
-3. **Node Creation:** Create all node types with proper constraints
-4. **Relationship Creation:** Establish relationships between nodes
-5. **Index Creation:** Create performance indexes
-6. **Data Validation:** Verify migration completeness and accuracy
+3. **Database Selection:** Connect to the specified Neo4j database (learn-graph-db)
+4. **Node Creation:** Create all node types with proper constraints
+5. **Relationship Creation:** Establish relationships between nodes
+6. **Index Creation:** Create performance indexes
+7. **Data Validation:** Verify migration completeness and accuracy
 
 #### Transformation Logic
 

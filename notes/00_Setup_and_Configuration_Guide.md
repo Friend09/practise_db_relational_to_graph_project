@@ -56,10 +56,7 @@ pip install pandas faker neo4j python-dotenv
 
 2. **Create Database**
 
-   - Open Neo4j Desktop
-   - Create new project: "Learn App Portfolio Analysis"
-   - Add local database: "learn-graph-db"
-   - Set password (remember for `.env` file)
+   - Create a new database called "learn-graph-db"
    - Start the database
 
 3. **Configure Import Directory**
@@ -258,11 +255,13 @@ Edit `.env` with your actual Neo4j connection details:
 NEO4J_URI=bolt://localhost:7687
 NEO4J_USER=neo4j
 NEO4J_PASSWORD=your-actual-password
+NEO4J_DATABASE=learn-graph-db
 
 # For Neo4j Aura (cloud)
 # NEO4J_URI=neo4j+s://xxxxx.databases.neo4j.io
 # NEO4J_USER=neo4j
 # NEO4J_PASSWORD=your-generated-password
+# NEO4J_DATABASE=neo4j
 
 # SQLite database path (use absolute path)
 SQLITE_DB_PATH=/full/path/to/your/project/data/applications.db
@@ -331,11 +330,13 @@ load_dotenv()
 uri = os.getenv('NEO4J_URI')
 user = os.getenv('NEO4J_USER')
 password = os.getenv('NEO4J_PASSWORD')
+database = os.getenv('NEO4J_DATABASE', 'learn-graph-db')
 
 driver = GraphDatabase.driver(uri, auth=(user, password))
-with driver.session() as session:
+with driver.session(database=database) as session:
     result = session.run('RETURN 1 as test')
     print('Neo4j connection successful:', result.single()['test'])
+    print('Connected to database:', database)
 driver.close()
 "
 ```

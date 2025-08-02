@@ -11,15 +11,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class Neo4jAnalyzer:
-    def __init__(self, neo4j_uri, neo4j_user, neo4j_password):
+    def __init__(self, neo4j_uri, neo4j_user, neo4j_password, database="learn-graph-db"):
         self.driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password))
+        self.database = database
 
     def close(self):
         self.driver.close()
 
     def run_query(self, query, description=""):
         """Run a Cypher query and return results"""
-        with self.driver.session() as session:
+        with self.driver.session(database=self.database) as session:
             result = session.run(query)
             records = [record.data() for record in result]
             if description:
@@ -322,10 +323,12 @@ def main():
     NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
     NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
     NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "password")
+    NEO4J_DATABASE = os.getenv("NEO4J_DATABASE", "learn-graph-db")
 
     print(f"Connecting to Neo4j at: {NEO4J_URI}")
+    print(f"Using Neo4j database: {NEO4J_DATABASE}")
 
-    analyzer = Neo4jAnalyzer(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
+    analyzer = Neo4jAnalyzer(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD, NEO4J_DATABASE)
 
     try:
         analyzer.run_all_analyses()

@@ -13,22 +13,23 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class Neo4jMigrator:
-    def __init__(self, neo4j_uri, neo4j_user, neo4j_password, sqlite_db_path):
+    def __init__(self, neo4j_uri, neo4j_user, neo4j_password, sqlite_db_path, database="learn-graph-db"):
         self.driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password))
         self.sqlite_db_path = sqlite_db_path
+        self.database = database
 
     def close(self):
         self.driver.close()
 
     def clear_database(self):
         """Clear all nodes and relationships in Neo4j database"""
-        with self.driver.session() as session:
+        with self.driver.session(database=self.database) as session:
             session.run("MATCH (n) DETACH DELETE n")
             logger.info("Cleared Neo4j database")
 
     def create_constraints_and_indexes(self):
         """Create constraints and indexes for better performance"""
-        with self.driver.session() as session:
+        with self.driver.session(database=self.database) as session:
             # Create constraints for unique identifiers
             constraints = [
                 "CREATE CONSTRAINT app_name_unique IF NOT EXISTS FOR (a:Application) REQUIRE a.name IS UNIQUE",
@@ -54,7 +55,7 @@ class Neo4jMigrator:
 
     def create_application_nodes(self, df):
         """Create Application nodes"""
-        with self.driver.session() as session:
+        with self.driver.session(database=self.database) as session:
             for _, row in df.iterrows():
                 query = """
                 CREATE (a:Application {
@@ -118,7 +119,7 @@ class Neo4jMigrator:
         """Create Category nodes"""
         categories = df[['category', 'subcategory']].drop_duplicates()
 
-        with self.driver.session() as session:
+        with self.driver.session(database=self.database) as session:
             # Create main categories
             main_categories = df['category'].unique()
             for category in main_categories:
@@ -149,7 +150,7 @@ class Neo4jMigrator:
         """Create Vendor nodes"""
         vendors = df[['vendor_name', 'vendor_contact_email']].drop_duplicates()
 
-        with self.driver.session() as session:
+        with self.driver.session(database=self.database) as session:
             for _, row in vendors.iterrows():
                 query = """
                 MERGE (v:Vendor {
@@ -168,7 +169,7 @@ class Neo4jMigrator:
         """Create Department nodes"""
         departments = df['department'].unique()
 
-        with self.driver.session() as session:
+        with self.driver.session(database=self.database) as session:
             for department in departments:
                 query = "MERGE (d:Department {name: $name})"
                 session.run(query, {'name': department})
@@ -183,7 +184,7 @@ class Neo4jMigrator:
         for col in ['app_owner', 'technical_lead', 'business_owner']:
             people.update(df[col].dropna().unique())
 
-        with self.driver.session() as session:
+        with self.driver.session(database=self.database) as session:
             for person in people:
                 query = "MERGE (p:Person {name: $name})"
                 session.run(query, {'name': person})
@@ -192,7 +193,7 @@ class Neo4jMigrator:
 
     def create_relationships(self, df):
         """Create relationships between nodes"""
-        with self.driver.session() as session:
+        with self.driver.session(database=self.database) as session:
             for _, row in df.iterrows():
                 app_name = row['app_name']
 
@@ -299,13 +300,15 @@ def main():
     NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")
     NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
     NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "password")
+    NEO4J_DATABASE = os.getenv("NEO4J_DATABASE", "learn-graph-db")
 
     SQLITE_DB_PATH = os.getenv("SQLITE_DB_PATH", "../data/applications.db")
 
     print(f"Connecting to Neo4j at: {NEO4J_URI}")
-    print(f"Using database: {SQLITE_DB_PATH}")
+    print(f"Using Neo4j database: {NEO4J_DATABASE}")
+    print(f"Using SQLite database: {SQLITE_DB_PATH}")
 
-    migrator = Neo4jMigrator(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD, SQLITE_DB_PATH)
+    migrator = Neo4jMigrator(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD, SQLITE_DB_PATH, NEO4J_DATABASE)
 
     try:
         migrator.migrate()
