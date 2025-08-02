@@ -97,38 +97,38 @@ If you prefer to manually import the CSV data using Cypher queries instead of th
 
 3. **Import Applications**
 
-   ```cypher
-   LOAD CSV WITH HEADERS FROM 'file:///applications.csv' AS row
-   WHERE row.app_id IS NOT NULL
-   CREATE (a:Application {
-       app_id: toInteger(row.app_id),
-       name: row.app_name,
-       description: row.app_description,
-       version: row.app_version,
-       annual_cost: toFloat(row.annual_cost),
-       license_type: row.license_type,
-       cost_center: row.cost_center,
-       in_use: toBoolean(row.in_use),
-       user_count: toFloat(row.user_count),
-       deployment_type: row.deployment_type,
-       environment: row.environment,
-       platform: row.platform,
-       programming_language: row.programming_language,
-       database_type: row.database_type,
-       compliance_requirements: row.compliance_requirements,
-       security_classification: row.security_classification,
-       data_sensitivity: row.data_sensitivity,
-       installation_date: date(row.installation_date),
-       last_updated: date(row.last_updated),
-       end_of_life_date: CASE WHEN row.end_of_life_date IS NOT NULL THEN date(row.end_of_life_date) ELSE null END,
-       renewal_date: date(row.renewal_date),
-       uptime_sla: toFloat(row.uptime_sla),
-       criticality: row.criticality,
-       tags: split(row.tags, ','),
-       notes: row.notes,
-       created_at: datetime(row.created_at),
-       updated_at: datetime(row.updated_at)
-   });
+```cypher
+LOAD CSV WITH HEADERS FROM 'file:////Users/../data/applications.csv' AS row
+WITH row WHERE row.app_id IS NOT NULL
+CREATE (a:Application {
+    app_id: toInteger(row.app_id),
+    name: row.app_name,
+    description: row.app_description,
+    version: row.app_version,
+    annual_cost: toFloat(row.annual_cost),
+    license_type: row.license_type,
+    cost_center: row.cost_center,
+    in_use: toBoolean(row.in_use),
+    user_count: toFloat(row.user_count),
+    deployment_type: row.deployment_type,
+    environment: row.environment,
+    platform: row.platform,
+    programming_language: row.programming_language,
+    database_type: row.database_type,
+    compliance_requirements: row.compliance_requirements,
+    security_classification: row.security_classification,
+    data_sensitivity: row.data_sensitivity,
+    installation_date: date(row.installation_date),
+    last_updated: date(row.last_updated),
+    end_of_life_date: CASE WHEN row.end_of_life_date IS NOT NULL THEN date(row.end_of_life_date) ELSE null END,
+    renewal_date: date(row.renewal_date),
+    uptime_sla: toFloat(row.uptime_sla),
+    criticality: row.criticality,
+    tags: split(row.tags, ','),
+    notes: row.notes,
+    created_at: datetime(row.created_at),
+    updated_at: datetime(row.updated_at)
+});
    ```
 
 4. **Import Vendors and Create Relationships**
