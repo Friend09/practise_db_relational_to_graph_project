@@ -27,7 +27,90 @@ ORDER BY count DESC
 CALL db.schema.visualization()
 ```
 
-## Cost Optimization Analysis
+### Data Structure Exploration
+
+```cypher
+// Explore sample data with relationships
+MATCH (a:Application)-[r]->(n)
+RETURN a.name, type(r), labels(n),
+       CASE WHEN 'Person' IN labels(n) THEN n.name
+            WHEN 'Vendor' IN labels(n) THEN n.name
+            WHEN 'Department' IN labels(n) THEN n.name
+            WHEN 'Category' IN labels(n) THEN n.name
+            ELSE toString(n) END AS target
+LIMIT 20;
+```
+
+```cypher
+// Find orphaned nodes (no relationships)
+MATCH (n) WHERE NOT (n)--() RETURN n;
+```
+
+```cypher
+// Get random sample of applications
+MATCH (a:Application) RETURN a LIMIT 5;
+```
+
+## Quick Start Analysis Queries
+
+These queries are specifically designed for the imported application portfolio data and provide immediate insights:
+
+### Most Expensive Applications
+
+```cypher
+MATCH (a:Application)
+WHERE a.annual_cost IS NOT NULL
+RETURN a.name, a.annual_cost, a.criticality
+ORDER BY a.annual_cost DESC
+LIMIT 10;
+```
+
+### Application Dependencies Graph
+
+```cypher
+MATCH (a:Application)-[:DEPENDS_ON]->(dep:Application)
+RETURN a.name AS Application, dep.name AS DependsOn
+ORDER BY a.name;
+```
+
+### Vendor Portfolio Analysis
+
+```cypher
+MATCH (v:Vendor)<-[:PROVIDED_BY]-(a:Application)
+RETURN v.name AS Vendor,
+       count(a) AS ApplicationCount,
+       sum(a.annual_cost) AS TotalCost,
+       avg(a.annual_cost) AS AvgCost
+ORDER BY TotalCost DESC;
+```
+
+### Critical Applications by Department
+
+```cypher
+MATCH (d:Department)<-[:USED_BY]-(a:Application)
+WHERE a.criticality = 'high'
+RETURN d.name AS Department,
+       count(a) AS CriticalApps,
+       sum(a.annual_cost) AS TotalCost
+ORDER BY CriticalApps DESC;
+```
+
+### People with Multiple Responsibilities
+
+```cypher
+MATCH (p:Person)
+WITH p,
+     [(a:Application)-[:OWNED_BY]->(p) | a] AS owned,
+     [(a:Application)-[:TECH_LEAD]->(p) | a] AS tech_lead,
+     [(a:Application)-[:BUSINESS_OWNER]->(p) | a] AS business_owner
+WHERE size(owned) + size(tech_lead) + size(business_owner) > 1
+RETURN p.name,
+       size(owned) AS AppsOwned,
+       size(tech_lead) AS TechLead,
+       size(business_owner) AS BusinessOwner,
+       size(owned) + size(tech_lead) + size(business_owner) AS TotalResponsibilities
+ORDER BY TotalResponsibilities DESC;
+```
 
 ### Find Unused Applications Costing Money
 

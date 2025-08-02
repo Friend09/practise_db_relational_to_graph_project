@@ -57,14 +57,176 @@ pip install pandas faker neo4j python-dotenv
 2. **Create Database**
 
    - Open Neo4j Desktop
-   - Create new project: "Application Portfolio Analysis"
-   - Add local database: "applications-graph"
+   - Create new project: "Learn App Portfolio Analysis"
+   - Add local database: "learn-graph-db"
    - Set password (remember for `.env` file)
    - Start the database
 
-3. **Verify Connection**
+3. **Configure Import Directory**
+
+   For CSV import functionality, you'll need to copy your data files to Neo4j's import directory:
+
+   - **macOS**: `~/Library/Application Support/Neo4j Desktop/Application/relate-data/dbmss/[dbms-id]/import/`
+   - **Windows**: `%UserProfile%\AppData\Local\Neo4j\Relate\Data\dbmss\[dbms-id]\import\`
+   - **Linux**: `~/.config/Neo4j Desktop/Application/relate-data/dbmss/[dbms-id]/import/`
+
+   Alternatively, you can use absolute file paths with the `file:///` protocol.
+
+4. **Verify Connection**
    - Click "Open" to access Neo4j Browser
-   - Should see Neo4j Browser interface at http://localhost:7474
+   - Should see Neo4j Browser interface at <http://localhost:7474>
+   - Select the "learn-graph-db" database from the dropdown
+
+### Manual CSV Import (Alternative Method)
+
+If you prefer to manually import the CSV data using Cypher queries instead of the automated script, follow these steps:
+
+1. **Copy CSV to Import Directory**
+
+   Copy your `applications.csv` file to the Neo4j import directory identified above.
+
+2. **Create Database Constraints**
+
+   In Neo4j Browser, execute these queries to create constraints for data integrity:
+
+   ```cypher
+   CREATE CONSTRAINT app_id_unique FOR (a:Application) REQUIRE a.app_id IS UNIQUE;
+   CREATE CONSTRAINT vendor_name_unique FOR (v:Vendor) REQUIRE v.name IS UNIQUE;
+   CREATE CONSTRAINT person_name_unique FOR (p:Person) REQUIRE p.name IS UNIQUE;
+   CREATE CONSTRAINT department_name_unique FOR (d:Department) REQUIRE d.name IS UNIQUE;
+   CREATE CONSTRAINT category_name_unique FOR (c:Category) REQUIRE c.name IS UNIQUE;
+   CREATE CONSTRAINT subcategory_name_unique FOR (s:Subcategory) REQUIRE s.name IS UNIQUE;
+   ```
+
+3. **Import Applications**
+
+   ```cypher
+   LOAD CSV WITH HEADERS FROM 'file:///applications.csv' AS row
+   WHERE row.app_id IS NOT NULL
+   CREATE (a:Application {
+       app_id: toInteger(row.app_id),
+       name: row.app_name,
+       description: row.app_description,
+       version: row.app_version,
+       annual_cost: toFloat(row.annual_cost),
+       license_type: row.license_type,
+       cost_center: row.cost_center,
+       in_use: toBoolean(row.in_use),
+       user_count: toFloat(row.user_count),
+       deployment_type: row.deployment_type,
+       environment: row.environment,
+       platform: row.platform,
+       programming_language: row.programming_language,
+       database_type: row.database_type,
+       compliance_requirements: row.compliance_requirements,
+       security_classification: row.security_classification,
+       data_sensitivity: row.data_sensitivity,
+       installation_date: date(row.installation_date),
+       last_updated: date(row.last_updated),
+       end_of_life_date: CASE WHEN row.end_of_life_date IS NOT NULL THEN date(row.end_of_life_date) ELSE null END,
+       renewal_date: date(row.renewal_date),
+       uptime_sla: toFloat(row.uptime_sla),
+       criticality: row.criticality,
+       tags: split(row.tags, ','),
+       notes: row.notes,
+       created_at: datetime(row.created_at),
+       updated_at: datetime(row.updated_at)
+   });
+   ```
+
+4. **Import Vendors and Create Relationships**
+
+   ```cypher
+   LOAD CSV WITH HEADERS FROM 'file:///applications.csv' AS row
+   WHERE row.vendor_name IS NOT NULL
+   MERGE (v:Vendor {name: row.vendor_name})
+   ON CREATE SET v.contact_email = row.vendor_contact_email
+   WITH v, row
+   MATCH (a:Application {app_id: toInteger(row.app_id)})
+   MERGE (a)-[:PROVIDED_BY]->(v);
+   ```
+
+5. **Import People and Create Relationships**
+
+   ```cypher
+   // App Owners
+   LOAD CSV WITH HEADERS FROM 'file:///applications.csv' AS row
+   WHERE row.app_owner IS NOT NULL
+   MERGE (p:Person {name: row.app_owner})
+   WITH p, row
+   MATCH (a:Application {app_id: toInteger(row.app_id)})
+   MERGE (a)-[:OWNED_BY]->(p);
+
+   // Technical Leads
+   LOAD CSV WITH HEADERS FROM 'file:///applications.csv' AS row
+   WHERE row.technical_lead IS NOT NULL
+   MERGE (p:Person {name: row.technical_lead})
+   WITH p, row
+   MATCH (a:Application {app_id: toInteger(row.app_id)})
+   MERGE (a)-[:TECH_LEAD]->(p);
+
+   // Business Owners
+   LOAD CSV WITH HEADERS FROM 'file:///applications.csv' AS row
+   WHERE row.business_owner IS NOT NULL
+   MERGE (p:Person {name: row.business_owner})
+   WITH p, row
+   MATCH (a:Application {app_id: toInteger(row.app_id)})
+   MERGE (a)-[:BUSINESS_OWNER]->(p);
+   ```
+
+6. **Import Departments and Categories**
+
+   ```cypher
+   // Departments
+   LOAD CSV WITH HEADERS FROM 'file:///applications.csv' AS row
+   WHERE row.department IS NOT NULL
+   MERGE (d:Department {name: row.department})
+   WITH d, row
+   MATCH (a:Application {app_id: toInteger(row.app_id)})
+   MERGE (a)-[:USED_BY]->(d);
+
+   // Categories
+   LOAD CSV WITH HEADERS FROM 'file:///applications.csv' AS row
+   WHERE row.category IS NOT NULL
+   MERGE (c:Category {name: row.category})
+   WITH c, row
+   MATCH (a:Application {app_id: toInteger(row.app_id)})
+   MERGE (a)-[:BELONGS_TO]->(c);
+
+   // Subcategories
+   LOAD CSV WITH HEADERS FROM 'file:///applications.csv' AS row
+   WHERE row.subcategory IS NOT NULL
+   MERGE (s:Subcategory {name: row.subcategory})
+   WITH s, row
+   MATCH (a:Application {app_id: toInteger(row.app_id)})
+   MERGE (a)-[:SUBCATEGORY_OF]->(s);
+   ```
+
+7. **Create Application Dependencies and Integrations**
+
+   ```cypher
+   // Dependencies
+   LOAD CSV WITH HEADERS FROM 'file:///applications.csv' AS row
+   WHERE row.depends_on_apps IS NOT NULL
+   WITH row, split(row.depends_on_apps, ',') AS deps
+   MATCH (a:Application {app_id: toInteger(row.app_id)})
+   UNWIND deps AS dep
+   WITH a, trim(dep) AS dependency_name
+   MATCH (dep_app:Application)
+   WHERE dep_app.name CONTAINS dependency_name
+   MERGE (a)-[:DEPENDS_ON]->(dep_app);
+
+   // Integrations
+   LOAD CSV WITH HEADERS FROM 'file:///applications.csv' AS row
+   WHERE row.integrates_with_apps IS NOT NULL
+   WITH row, split(row.integrates_with_apps, ',') AS integrations
+   MATCH (a:Application {app_id: toInteger(row.app_id)})
+   UNWIND integrations AS integration
+   WITH a, trim(integration) AS integration_name
+   MATCH (int_app:Application)
+   WHERE int_app.name CONTAINS integration_name
+   MERGE (a)-[:INTEGRATES_WITH]->(int_app);
+   ```
 
 ### Option B: Neo4j Aura (Cloud)
 
@@ -184,6 +346,37 @@ In Neo4j Browser, run:
 
 ```cypher
 MATCH (n) RETURN labels(n) as node_type, count(n) as count
+```
+
+You should see results similar to:
+
+```text
+node_type          count
+["Application"]      100
+["Vendor"]           15-20
+["Person"]           30-40
+["Department"]       8-10
+["Category"]         6-8
+["Subcategory"]      10-15
+```
+
+Check relationships were created:
+
+```cypher
+MATCH ()-[r]->() RETURN type(r) AS RelationshipType, count(r) AS Count;
+```
+
+Verify sample data structure:
+
+```cypher
+MATCH (a:Application)-[r]->(n)
+RETURN a.name, type(r), labels(n),
+       CASE WHEN 'Person' IN labels(n) THEN n.name
+            WHEN 'Vendor' IN labels(n) THEN n.name
+            WHEN 'Department' IN labels(n) THEN n.name
+            WHEN 'Category' IN labels(n) THEN n.name
+            ELSE toString(n) END AS target
+LIMIT 20;
 ```
 
 ## Troubleshooting

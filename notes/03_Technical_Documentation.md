@@ -14,6 +14,7 @@ Represents the core applications in the organization.
 
 **Properties:**
 
+- `app_id` (integer, unique) - Application identifier
 - `name` (string, unique) - Application name identifier
 - `description` (string) - Detailed application description
 - `version` (string) - Current version number
@@ -38,29 +39,17 @@ Represents the core applications in the organization.
 - `criticality` (string) - Business criticality level
 - `tags` (array) - Metadata tags for categorization
 - `notes` (string) - Additional notes and comments
+- `created_at` (datetime) - Record creation timestamp
+- `updated_at` (datetime) - Record update timestamp
 
 **Constraints:**
 
 ```cypher
-CREATE CONSTRAINT app_name_unique FOR (a:Application) REQUIRE a.name IS UNIQUE
+CREATE CONSTRAINT app_id_unique FOR (a:Application) REQUIRE a.app_id IS UNIQUE;
+CREATE CONSTRAINT app_name_unique FOR (a:Application) REQUIRE a.name IS UNIQUE;
 ```
 
-#### 2. Category Node
-
-Represents application categories and subcategories for hierarchical classification.
-
-**Properties:**
-
-- `name` (string, unique) - Category name
-- `type` (string) - Category type ('main' or 'sub')
-
-**Constraints:**
-
-```cypher
-CREATE CONSTRAINT category_name_unique FOR (c:Category) REQUIRE c.name IS UNIQUE
-```
-
-#### 3. Vendor Node
+#### 2. Vendor Node
 
 Represents software vendors and suppliers.
 
@@ -72,7 +61,21 @@ Represents software vendors and suppliers.
 **Constraints:**
 
 ```cypher
-CREATE CONSTRAINT vendor_name_unique FOR (v:Vendor) REQUIRE v.name IS UNIQUE
+CREATE CONSTRAINT vendor_name_unique FOR (v:Vendor) REQUIRE v.name IS UNIQUE;
+```
+
+#### 3. Person Node
+
+Represents individuals involved with application management.
+
+**Properties:**
+
+- `name` (string, unique) - Person's full name
+
+**Constraints:**
+
+```cypher
+CREATE CONSTRAINT person_name_unique FOR (p:Person) REQUIRE p.name IS UNIQUE;
 ```
 
 #### 4. Department Node
@@ -86,40 +89,80 @@ Represents organizational departments and business units.
 **Constraints:**
 
 ```cypher
-CREATE CONSTRAINT department_name_unique FOR (d:Department) REQUIRE d.name IS UNIQUE
+CREATE CONSTRAINT department_name_unique FOR (d:Department) REQUIRE d.name IS UNIQUE;
 ```
 
-#### 5. Person Node
+#### 5. Category Node
 
-Represents individuals involved with application management.
+Represents main application categories for classification.
 
 **Properties:**
 
-- `name` (string, unique) - Person's full name
+- `name` (string, unique) - Category name
 
 **Constraints:**
 
 ```cypher
-CREATE CONSTRAINT person_name_unique FOR (p:Person) REQUIRE p.name IS UNIQUE
+CREATE CONSTRAINT category_name_unique FOR (c:Category) REQUIRE c.name IS UNIQUE;
 ```
 
-#### 6. ExternalApp Node
+#### 6. Subcategory Node
 
-Represents external applications and services that internal applications depend on or integrate with.
+Represents detailed application subcategories for hierarchical classification.
 
 **Properties:**
 
-- `name` (string, unique) - External application name
+- `name` (string, unique) - Subcategory name
 
 **Constraints:**
 
 ```cypher
-CREATE CONSTRAINT external_app_name_unique FOR (e:ExternalApp) REQUIRE e.name IS UNIQUE
+CREATE CONSTRAINT subcategory_name_unique FOR (s:Subcategory) REQUIRE s.name IS UNIQUE;
 ```
 
 ### Relationship Types and Semantics
 
-#### 1. BELONGS_TO
+#### 1. PROVIDED_BY
+
+- **Direction:** Application → Vendor
+- **Cardinality:** Many-to-One
+- **Description:** Indicates which vendor provides/supplies the application
+- **Properties:** None
+- **Business Meaning:** Enables vendor risk analysis and consolidation opportunities
+
+#### 2. OWNED_BY
+
+- **Direction:** Application → Person
+- **Cardinality:** Many-to-One
+- **Description:** Indicates which person owns the application
+- **Properties:** None
+- **Business Meaning:** Identifies application ownership and responsibility
+
+#### 3. TECH_LEAD
+
+- **Direction:** Application → Person
+- **Cardinality:** Many-to-One
+- **Description:** Indicates which person is the technical lead for the application
+- **Properties:** None
+- **Business Meaning:** Identifies technical responsibility and expertise
+
+#### 4. BUSINESS_OWNER
+
+- **Direction:** Application → Person
+- **Cardinality:** Many-to-One
+- **Description:** Indicates which person is the business owner of the application
+- **Properties:** None
+- **Business Meaning:** Identifies business stakeholder and decision maker
+
+#### 5. USED_BY
+
+- **Direction:** Application → Department
+- **Cardinality:** Many-to-One
+- **Description:** Indicates which department uses the application
+- **Properties:** None
+- **Business Meaning:** Supports departmental portfolio analysis and cost allocation
+
+#### 6. BELONGS_TO
 
 - **Direction:** Application → Category
 - **Cardinality:** Many-to-One
@@ -127,41 +170,25 @@ CREATE CONSTRAINT external_app_name_unique FOR (e:ExternalApp) REQUIRE e.name IS
 - **Properties:** None
 - **Business Meaning:** Enables category-based analysis and grouping
 
-#### 2. SUPPLIED_BY
+#### 7. SUBCATEGORY_OF
 
-- **Direction:** Application → Vendor
+- **Direction:** Application → Subcategory
 - **Cardinality:** Many-to-One
-- **Description:** Indicates which vendor supplies the application
+- **Description:** Indicates which subcategory an application belongs to
 - **Properties:** None
-- **Business Meaning:** Enables vendor risk analysis and consolidation opportunities
+- **Business Meaning:** Enables detailed categorization and analysis
 
-#### 3. OWNED_BY
+#### 8. DEPENDS_ON
 
-- **Direction:** Application → Department
-- **Cardinality:** Many-to-One
-- **Description:** Indicates which department owns the application
-- **Properties:** None
-- **Business Meaning:** Supports departmental portfolio analysis and cost allocation
-
-#### 4. OWNS/LEADS/MANAGES
-
-- **Direction:** Person → Application
-- **Cardinality:** Many-to-Many
-- **Description:** Indicates different types of responsibility relationships
-- **Properties:** None
-- **Business Meaning:** Identifies key personnel and responsibility distribution
-
-#### 5. DEPENDS_ON
-
-- **Direction:** Application → ExternalApp
+- **Direction:** Application → Application
 - **Cardinality:** Many-to-Many
 - **Description:** Indicates dependency relationships between applications
 - **Properties:** None (could be extended with dependency_type, criticality)
 - **Business Meaning:** Critical for impact analysis and risk assessment
 
-#### 6. INTEGRATES_WITH
+#### 9. INTEGRATES_WITH
 
-- **Direction:** Application → ExternalApp
+- **Direction:** Application → Application
 - **Cardinality:** Many-to-Many
 - **Description:** Indicates integration relationships between applications
 - **Properties:** None (could be extended with integration_type, data_flow)

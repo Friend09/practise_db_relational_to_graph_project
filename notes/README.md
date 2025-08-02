@@ -11,7 +11,10 @@ This folder contains comprehensive documentation for the Relational to Graph Dat
 - Environment setup and Python configuration
 - Neo4j installation (Desktop and Aura options)
 - Environment variable configuration
+- **Manual CSV import process with step-by-step Cypher queries**
+- **Neo4j import directory configuration**
 - Step-by-step project execution
+- **Data verification and validation procedures**
 - Comprehensive troubleshooting guide
 - System requirements and verification
 
@@ -19,6 +22,8 @@ This folder contains comprehensive documentation for the Relational to Graph Dat
 
 **Comprehensive Cypher query examples and SQL comparisons**
 
+- **Quick start analysis queries for immediate insights**
+- **Data structure exploration and validation queries**
 - 50+ business-focused Cypher queries
 - Cost optimization and vendor analysis
 - Dependency and integration analysis
@@ -33,6 +38,8 @@ This folder contains comprehensive documentation for the Relational to Graph Dat
 - Project scope and learning outcomes
 - Business value and strategic impact
 - Fundamental differences between relational and graph approaches
+- **Detailed learning path with next steps for exploration**
+- **Common exploration commands and best practices**
 - Implementation guidance and best practices
 - Success metrics and evaluation criteria
 
@@ -40,7 +47,9 @@ This folder contains comprehensive documentation for the Relational to Graph Dat
 
 **Graph model design and technical implementation details**
 
-- Complete graph schema documentation
+- **Complete graph schema with all relationship types**
+- **Detailed node properties including app_id and timestamps**
+- **Updated relationship semantics (PROVIDED_BY, TECH_LEAD, etc.)**
 - Node types, properties, and constraints
 - Relationship semantics and patterns
 - Migration strategies and data quality considerations
