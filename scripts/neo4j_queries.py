@@ -3,12 +3,19 @@ import pandas as pd
 import logging
 import os
 from dotenv import load_dotenv
+from rich.console import Console
+from rich.table import Table
+from rich.panel import Panel
+from rich.text import Text
 
 # Load environment variables from .env file
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Rich console for colorful terminal output
+console = Console()
 
 class Neo4jAnalyzer:
     def __init__(self, neo4j_uri, neo4j_user, neo4j_password, database="learn-graph-db"):
@@ -23,20 +30,43 @@ class Neo4jAnalyzer:
         with self.driver.session(database=self.database) as session:
             result = session.run(query)
             records = [record.data() for record in result]
+
             if description:
-                print(f"\n=== {description} ===")
-                print(f"Query: {query}")
-                print(f"Results ({len(records)} records):")
-                for i, record in enumerate(records[:10]):  # Show first 10 results
-                    print(f"  {i+1}. {record}")
-                if len(records) > 10:
-                    print(f"  ... and {len(records) - 10} more records")
-                print()
+                console.rule(f"{description}", style="bold cyan")
+                console.print(Panel.fit(Text(query), title="Query", title_align="left", style="dim"))
+
+                if records:
+                    # Build a table using keys from the first record
+                    first_record = records[0]
+                    columns = list(first_record.keys())
+                    table = Table(show_header=True, header_style="bold magenta")
+                    for col in columns:
+                        table.add_column(str(col))
+
+                    for record in records[:10]:
+                        row_values = []
+                        for col in columns:
+                            value = record.get(col)
+                            if isinstance(value, (list, tuple, set)):
+                                value = ", ".join(map(str, value))
+                            row_values.append(str(value))
+                        table.add_row(*row_values)
+
+                    console.print(table)
+
+                    if len(records) > 10:
+                        remaining = len(records) - 10
+                        console.print(f"… and {remaining} more record(s)", style="italic dim")
+                else:
+                    console.print("No records returned.", style="yellow")
+
+                console.print()  # spacing
+
             return records
 
     def basic_graph_statistics(self):
         """Get basic statistics about the graph"""
-        print("=== BASIC GRAPH STATISTICS ===")
+        console.rule("BASIC GRAPH STATISTICS", style="bold green")
 
         # Count nodes by type
         queries = [
@@ -51,13 +81,13 @@ class Neo4jAnalyzer:
         for query, description in queries:
             result = self.run_query(query)
             if result:
-                print(f"{description}: {result[0]['count']}")
+                console.print(f"{description}: [bold]{result[0]['count']}[/bold]")
 
         # Count relationships
         rel_query = "MATCH ()-[r]->() RETURN type(r) as relationship_type, count(r) as count ORDER BY count DESC"
         relationships = self.run_query(rel_query, "Relationship Counts")
 
-        print()
+        console.print()
 
     def vendor_analysis(self):
         """Analyze vendor relationships"""
@@ -305,8 +335,7 @@ class Neo4jAnalyzer:
 
     def run_all_analyses(self):
         """Run all analysis queries"""
-        print("RUNNING COMPREHENSIVE GRAPH ANALYSIS")
-        print("=" * 50)
+        console.rule("RUNNING COMPREHENSIVE GRAPH ANALYSIS", style="bold blue")
 
         self.basic_graph_statistics()
         self.vendor_analysis()
@@ -325,21 +354,21 @@ def main():
     NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "password")
     NEO4J_DATABASE = os.getenv("NEO4J_DATABASE", "learn-graph-db")
 
-    print(f"Connecting to Neo4j at: {NEO4J_URI}")
-    print(f"Using Neo4j database: {NEO4J_DATABASE}")
+    console.print(f"Connecting to Neo4j at: [bold]{NEO4J_URI}[/bold]")
+    console.print(f"Using Neo4j database: [bold]{NEO4J_DATABASE}[/bold]")
 
     analyzer = Neo4jAnalyzer(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD, NEO4J_DATABASE)
 
     try:
         analyzer.run_all_analyses()
     except Exception as e:
-        print(f"Error connecting to Neo4j: {e}")
-        print("\nNote: This script requires a running Neo4j instance with migrated data.")
-        print("To run this analysis:")
-        print("1. Ensure Neo4j is running")
-        print("2. Run the migration script first")
-        print("3. Update connection details in .env file if needed")
-        print("4. Run this analysis script")
+        console.print(f"Error connecting to Neo4j: {e}", style="bold red")
+        console.print("\nNote: This script requires a running Neo4j instance with migrated data.", style="yellow")
+        console.print("To run this analysis:")
+        console.print("1. Ensure Neo4j is running")
+        console.print("2. Run the migration script first")
+        console.print("3. Update connection details in .env file if needed")
+        console.print("4. Run this analysis script")
     finally:
         analyzer.close()
 

@@ -36,12 +36,16 @@ jupyter-core==5.8.1
     #   jupyter-client
 kiwisolver==1.4.8
     # via matplotlib
+markdown-it-py==3.0.0
+    # via rich
 matplotlib==3.10.3
     # via -r requirements.in
 matplotlib-inline==0.1.7
     # via
     #   ipykernel
     #   ipython
+mdurl==0.1.2
+    # via markdown-it-py
 neo4j==5.28.1
     # via -r requirements.in
 nest-asyncio==1.6.0
@@ -80,6 +84,7 @@ pygments==2.19.2
     # via
     #   ipython
     #   ipython-pygments-lexers
+    #   rich
 pyparsing==3.2.3
     # via matplotlib
 python-dateutil==2.9.0.post0
@@ -97,6 +102,8 @@ pyzmq==27.0.0
     # via
     #   ipykernel
     #   jupyter-client
+rich==14.1.0
+    # via -r requirements.in
 six==1.17.0
     # via python-dateutil
 sqlalchemy==2.0.42
